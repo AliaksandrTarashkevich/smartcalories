@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mindflow Questionnaire</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Mindflow Questionnaire</h1>
+      <p class="subtitle">20 quick statements. Use the slider from Least likely to Most likely.</p>
+    </header>
+
+    <main>
+      <form id="questionnaire" novalidate>
+        
+
+        <section id="questions" class="questions" aria-label="Question sliders">
+          <!-- Sliders injected by main.ts -->
+        </section>
+
+        <div class="actions">
+          <button id="submitBtn" type="submit">Generate Insights</button>
+        </div>
+      </form>
+
+      <section id="results" class="results" hidden>
+        <div class="report">
+          <h2>Your Personality Snapshot</h2>
+          <div id="reportText" class="report-text" aria-live="polite"></div>
+        </div>
+
+        <section class="fantasy" id="fantasy" hidden>
+          <div class="fantasy-header">
+            <h2>Your Fantasy Set</h2>
+            <button id="genSetBtn" type="button" class="regen">Generate Fantasy Set</button>
+          </div>
+          <div id="fantasyGrid" class="grid-arts" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+
+    <div id="progressModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="progressTitle" hidden>
+      <div class="modal-content">
+        <h2 id="progressTitle">Working on your results…</h2>
+        <p id="progressStep" class="step">Shaping your portrait…</p>
+        <div class="progress">
+          <div id="progressBar" class="bar" style="width:0%" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" role="progressbar"></div>
+        </div>
+        <div class="percent" aria-live="polite"><span id="progressPercent">0</span>%</div>
+      </div>
+    </div>
+
+    <datalist id="ticks-7">
+      <option value="1"></option>
+      <option value="2"></option>
+      <option value="3"></option>
+      <option value="4"></option>
+      <option value="5"></option>
+      <option value="6"></option>
+      <option value="7"></option>
+    </datalist>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

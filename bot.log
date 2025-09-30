@@ -1,0 +1,16 @@
+🔍 DEBUG: Checking Supabase configuration
+URL configured: Yes
+ANON_KEY configured: Yes
+SERVICE_ROLE_KEY configured: Yes
+✅ Supabase connection successful
+🔍 DEBUG: Getting signed URL for male-bodyfat.jpg
+✅ Got signed URL: {'signedURL': 'https://icjdllvtxkyvpxhkefbl.supabase.co/storage/v1/object/sign/nutritionbot/male-bodyfat.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5X2FkYWQyNWQ4LTJhMGQtNDIwZi04ODM4LTQ1Y2M1NWQ5MzA4OSJ9.eyJ1cmwiOiJudXRyaXRpb25ib3QvbWFsZS1ib2R5ZmF0LmpwZyIsImlhdCI6MTc0NzgyODQ4NCwiZXhwIjoxNzQ3OTE0ODg0fQ.Fdw06B72OOHyntMa5yMRta_V3kLQpRYP3BJPW36IomI', 'signedUrl': 'https://icjdllvtxkyvpxhkefbl.supabase.co/storage/v1/object/sign/nutritionbot/male-bodyfat.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5X2FkYWQyNWQ4LTJhMGQtNDIwZi04ODM4LTQ1Y2M1NWQ5MzA4OSJ9.eyJ1cmwiOiJudXRyaXRpb25ib3QvbWFsZS1ib2R5ZmF0LmpwZyIsImlhdCI6MTc0NzgyODQ4NCwiZXhwIjoxNzQ3OTE0ODg0fQ.Fdw06B72OOHyntMa5yMRta_V3kLQpRYP3BJPW36IomI'}
+✅ Storage access successful
+Traceback (most recent call last):
+  File "/Users/aliaksandrtarashkevich/Desktop/ppitanieal/src/bot.py", line 896, in <module>
+    schedule_for_user(app.job_queue, uid)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aliaksandrtarashkevich/Desktop/ppitanieal/src/bot.py", line 698, in schedule_for_user
+    send_daily_summary,
+    ^^^^^^^^^^^^^^^^^^
+NameError: name 'send_daily_summary' is not defined. Did you mean: 'daily_summary'?

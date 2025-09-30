@@ -1,0 +1,41 @@
+{
+  "name": "audio-analyzer",
+  "version": "1.0.0",
+  "description": "Audio Transcription and Analysis Console Application using OpenAI Whisper and GPT",
+  "main": "audio_analyzer.js",
+  "bin": {
+    "audio-analyzer": "./audio_analyzer.js"
+  },
+  "scripts": {
+    "start": "node audio_analyzer.js",
+    "test": "node audio_analyzer.js --help",
+    "setup": "node setup.js",
+    "lint": "eslint audio_analyzer.js",
+    "dev": "nodemon audio_analyzer.js"
+  },
+  "keywords": [
+    "audio",
+    "transcription",
+    "whisper",
+    "openai",
+    "gpt",
+    "speech-to-text",
+    "analysis",
+    "console"
+  ],
+  "author": "Audio Analyzer Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "openai": "^4.28.0",
+    "music-metadata": "^7.14.0",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.3"
+  }
+}

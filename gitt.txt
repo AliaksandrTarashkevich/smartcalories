@@ -1,0 +1,5 @@
+requirements.txt
+chatgpt:
+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
+
+
