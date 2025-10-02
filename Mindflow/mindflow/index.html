@@ -9,7 +9,7 @@
   <body>
     <header class="app-header">
       <h1>Mindflow Questionnaire</h1>
-      <p class="subtitle">20 quick statements. Use the slider from Least likely to Most likely.</p>
+      <p class="subtitle">34 quick statements. Use the slider from Least likely to Most likely.</p>
     </header>
 
     <main>
@@ -28,13 +28,23 @@
       <section id="results" class="results" hidden>
         <div class="report">
           <h2>Your Personality Snapshot</h2>
+          <div id="chartsContainer" class="charts-container">
+            <div class="chart-section">
+              <h3>Core Traits 🔎</h3>
+              <canvas id="traitsChart" width="600" height="300"></canvas>
+            </div>
+            <div class="chart-section">
+              <h3>Facet Highlights 🧭</h3>
+              <canvas id="facetsChart" width="600" height="400"></canvas>
+            </div>
+          </div>
           <div id="reportText" class="report-text" aria-live="polite"></div>
         </div>
 
         <section class="fantasy" id="fantasy" hidden>
           <div class="fantasy-header">
-            <h2>Your Fantasy Set</h2>
-            <button id="genSetBtn" type="button" class="regen">Generate Fantasy Set</button>
+            <h2>Unlock Full Analysis & Fantasy Set</h2>
+            <button id="genSetBtn" type="button" class="regen">🔓 Generate Fantasy Set & Unlock Insights</button>
           </div>
           <div id="fantasyGrid" class="grid-arts" aria-live="polite"></div>
         </section>

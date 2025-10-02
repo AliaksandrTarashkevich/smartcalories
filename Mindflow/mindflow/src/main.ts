@@ -1,30 +1,7 @@
 import { computeScores, topTwoBigFive } from './lib/score';
-import { buildTextMessages } from './lib/prompts';
+import { buildTextMessages, QUESTIONS } from './lib/prompts';
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
-
-const QUESTIONS: { id: string; text: string }[] = [
-  { id: 'Q01', text: 'I feel energized by meeting new people.' },
-  { id: 'Q02', text: 'I keep my tasks and spaces organized.' },
-  { id: 'Q03', text: 'I often worry about small things.' },
-  { id: 'Q04', text: 'I enjoy exploring new ideas and experiences.' },
-  { id: 'Q05', text: 'I try to be considerate of others’ feelings.' },
-  { id: 'Q06', text: 'I follow through on my commitments reliably.' },
-  { id: 'Q07', text: 'I prefer quiet time to socializing.' },
-  { id: 'Q08', text: 'I bounce back quickly after setbacks.' },
-  { id: 'Q09', text: 'I’m skeptical of unusual or novel approaches.' },
-  { id: 'Q10', text: 'I try to be patient and cooperative.' },
-  { id: 'Q11', text: 'I make decisions promptly when needed.' },
-  { id: 'Q12', text: 'I plan ahead and manage my time well.' },
-  { id: 'Q13', text: 'I enjoy group activities and lively settings.' },
-  { id: 'Q14', text: 'I can stay calm under pressure.' },
-  { id: 'Q15', text: 'I like learning across different fields or arts.' },
-  { id: 'Q16', text: 'I can be blunt even if it seems harsh.' },
-  { id: 'Q17', text: 'I like setting goals and seeing them through.' },
-  { id: 'Q18', text: 'I’m comfortable taking calculated risks.' },
-  { id: 'Q19', text: 'I try to see the good in people.' },
-  { id: 'Q20', text: 'I can accurately reflect on my strengths and limits.' },
-];
 
 const STEPS = [
   'Analyzing your responses…',
@@ -161,6 +138,10 @@ function init() {
       if (!fullText) {
         console.warn('No analysis text returned from API.');
       }
+      // Render charts first
+      renderTraitsChart(scores);
+      renderFacetsChart(scores);
+      
       renderReport(fullText);
       // Show results after text is ready (full width report first)
       results.removeAttribute('hidden');
@@ -173,6 +154,17 @@ function init() {
         fantasy.removeAttribute('hidden');
         const generateSet = async () => {
           setBtn.disabled = true;
+          
+          // Unlock the Strengths and Blind Spots sections
+          const lockedSections = document.querySelectorAll('.locked-section');
+          lockedSections.forEach(section => {
+            section.classList.remove('locked-section');
+            const blurOverlay = section.querySelector('.blur-overlay');
+            const unlockPrompt = section.querySelector('.unlock-prompt');
+            if (blurOverlay) blurOverlay.classList.remove('blur-overlay');
+            if (unlockPrompt) unlockPrompt.remove();
+          });
+          
           grid.innerHTML = '';
           const [t1, t2] = topTraits as string[];
           const primaryTrait = String(t1 || 'Openness');
@@ -181,43 +173,78 @@ function init() {
           const items = [
             { 
               key: 'Crown', 
-              prompt: (v: any) => `A regal fantasy portrait of a noble figure wearing an ornate ${v.crown_type}, seated on a throne of crystal and gold. Ethereal blue and purple lighting illuminates intricate gemstone details. Cinematic composition with depth of field, photorealistic textures, 8K resolution, fantasy royal court setting, majestic atmosphere` 
+              prompt: (v: any) => `A detailed fantasy crown made of ${v.crown_type}, decorated with ${v.gemstones}, glowing with a subtle aura of ${v.color}, photographed like a high-end jewelry catalog, macro detail, glossy textures, crisp studio background.` 
             },
             { 
               key: 'Mythical Creature', 
-              prompt: (v: any) => `A magnificent ${v.creature_type} soaring through a mystical sky filled with floating islands and cascading waterfalls. The creature's scales shimmer with ${v.color} energy, embodying the essence of ${v.personality_trait}. Epic fantasy landscape with dramatic clouds, golden hour lighting, highly detailed scales and wings, cinematic wide shot` 
+              prompt: (v: any) => {
+                const styles: Record<string, string> = {
+                  'dragon': 'oil painting, stormy sky, epic and imposing',
+                  'phoenix': 'watercolor brushstrokes, blazing warm tones',
+                  'unicorn': 'pastel illustration, soft gradients, dreamlike',
+                  'wolf spirit': 'monochrome ink drawing with glowing highlights'
+                };
+                return `A ${v.creature_type} representing ${v.trait}, styled as ${styles[v.creature_type] || styles.dragon}.`;
+              }
             },
             { 
               key: 'Realm', 
-              prompt: (v: any) => `A breathtaking panoramic view of the ${v.realm_type} realm - a vast landscape of floating mountains connected by bridges of light. Crystal formations emit ${v.color} energy, representing ${v.personality_trait}. Misty valleys below, aurora borealis above, fantasy architecture, atmospheric perspective, cinematic fantasy art` 
+              prompt: (v: any) => `A wide landscape of the ${v.realm_type} realm, in ${v.realm_style}, infused with symbols of ${v.trait}.` 
             },
             { 
               key: 'Weapon', 
-              prompt: (v: any) => `An ancient ${v.weapon_type} floating in a mystical chamber, its blade glowing with ${v.color} energy and inscribed with glowing runes that pulse with power. The weapon embodies ${v.personality_trait}. Stone altar with mystical symbols, dramatic lighting from above, photorealistic metal textures, fantasy artifact concept art` 
+              prompt: (v: any) => `A legendary ${v.weapon_type}, presented as a 3D museum exhibit render, realistic metal and stone textures, glowing engraved runes, spotlight illumination, shallow depth of field.` 
             },
             { 
               key: 'Color Aura', 
-              prompt: (v: any) => `A mystical figure in meditation pose, surrounded by swirling ${v.color} energy that forms intricate patterns in the air. The aura represents ${v.personality_trait} and creates beautiful light trails. Floating particles, soft ethereal glow, spiritual atmosphere, fantasy meditation scene, cinematic lighting` 
+              prompt: (v: any) => `A human silhouette glowing with an aura of ${v.color}, styled as ${v.aura_style}, symbolizing ${v.trait}.` 
             },
             { 
               key: 'Rune', 
-              prompt: (v: any) => `An ancient stone tablet carved with a glowing ${v.color} rune that pulses with mystical energy. The rune embodies ${v.personality_trait} and is surrounded by floating magical symbols. Cracked stone texture, dramatic shadows, otherworldly glow, fantasy archaeological artifact, detailed stonework` 
+              prompt: (v: any) => `An ancient ${v.rune}, carved into ${v.rune_material}, styled as ${v.rune_style}.` 
             },
             { 
               key: 'Mythological God/Goddess', 
-              prompt: (v: any) => `A divine portrait of a ${v.god_or_goddess} standing in a celestial realm, embodying ${v.personality_trait}. Flowing robes of ${v.color} silk, ornate golden accessories, divine aura radiating light. Cosmic background with stars and nebula, epic mythological art style, photorealistic divine being, cinematic godly presence` 
+              prompt: (v: any) => `A depiction of ${v.deity}, styled as ${v.deity_style}.` 
+            },
+            { 
+              key: 'Tarot Card', 
+              prompt: (v: any) => `A tarot card illustration of ${v.tarot_symbol}, in classic Rider-Waite style: bold line art, flat colors, symbolic background, mystical borders.` 
             }
           ];
           console.log('[client] fantasy generation start, items:', items.length);
 
+          // Map traits to visual variables
+          const traitMap: Record<string, any> = {
+            'Openness': { crown: 'ivy', gemstone: 'amethyst', color: 'purple', creature: 'unicorn', realm: 'sky', weapon: 'staff', trait: 'creativity', deity: 'Athena', rune: 'Ansuz', tarot: 'The Unicorn' },
+            'Conscientiousness': { crown: 'gold', gemstone: 'ruby', color: 'red', creature: 'dragon', realm: 'desert', weapon: 'sword', trait: 'ambition', deity: 'Odin', rune: 'Uruz', tarot: 'The Crown' },
+            'Extraversion': { crown: 'gold', gemstone: 'sapphire', color: 'gold', creature: 'phoenix', realm: 'sky', weapon: 'spear', trait: 'energy', deity: 'Zeus', rune: 'Sowilo', tarot: 'The Phoenix' },
+            'Emotional Stability': { crown: 'thorns', gemstone: 'emerald', color: 'blue', creature: 'phoenix', realm: 'ocean', weapon: 'staff', trait: 'peace', deity: 'Shiva', rune: 'Isa', tarot: 'The Ocean' },
+            'Agreeableness': { crown: 'ivy', gemstone: 'emerald', color: 'green', creature: 'unicorn', realm: 'forest', weapon: 'bow', trait: 'compassion', deity: 'Lakshmi', rune: 'Gebo', tarot: 'The Forest' },
+            'Decisiveness': { crown: 'antlers', gemstone: 'ruby', color: 'red', creature: 'wolf spirit', realm: 'underworld', weapon: 'sword', trait: 'courage', deity: 'Ra', rune: 'Thurisaz', tarot: 'The Sword' },
+            'Risk Orientation': { crown: 'thorns', gemstone: 'sapphire', color: 'blue', creature: 'dragon', realm: 'sky', weapon: 'spear', trait: 'freedom', deity: 'Freyja', rune: 'Raido', tarot: 'The Dragon' },
+            'Self Insight': { crown: 'ivy', gemstone: 'amethyst', color: 'purple', creature: 'wolf spirit', realm: 'underworld', weapon: 'staff', trait: 'wisdom', deity: 'Isis', rune: 'Kenaz', tarot: 'The Wolf Spirit' }
+          };
+
+          const primary = traitMap[primaryTrait] || traitMap['Openness'];
+          const secondary = traitMap[secondaryTrait] || traitMap['Conscientiousness'];
+
           const vars = {
-            personality_trait: primaryTrait,
-            crown_type: 'golden royal crown, glowing with divine light',
-            creature_type: secondaryTrait === 'Emotional Stability' ? 'phoenix' : 'dragon',
-            realm_type: primaryTrait.toLowerCase(),
-            weapon_type: secondaryTrait === 'Conscientiousness' ? 'sword' : 'staff',
-            color: primaryTrait === 'Openness' ? 'aurora violet-blue' : 'warm golden',
-            god_or_goddess: primaryTrait === 'Agreeableness' ? 'goddess of harmony' : 'god of insight'
+            crown_type: primary.crown,
+            gemstones: primary.gemstone,
+            color: primary.color,
+            creature_type: primary.creature,
+            trait: primary.trait,
+            realm_type: primary.realm,
+            realm_style: primaryTrait === 'Openness' ? 'surreal digital painting' : primaryTrait === 'Emotional Stability' ? 'deep blue matte painting' : 'hand-drawn storybook illustration',
+            weapon_type: secondary.weapon,
+            aura_style: primary.color === 'purple' ? 'fractal light spirals' : primary.color === 'blue' ? 'galaxy starfield glow' : primary.color === 'gold' ? 'radiant divine light' : 'watercolor wash',
+            rune: primary.rune,
+            rune_material: 'stone',
+            rune_style: 'Norse rock engraving',
+            deity: primary.deity,
+            deity_style: primaryTrait === 'Openness' ? 'graphic novel ink illustration' : primaryTrait === 'Conscientiousness' ? 'golden relief carving' : 'Renaissance fresco',
+            tarot_symbol: primary.tarot
           };
 
           const makeCard = (title: string) => {
@@ -250,7 +277,7 @@ function init() {
                 // Generate description
                 c.desc.textContent = 'Generating description…';
                 try {
-                  const descPrompt = `You are analyzing a fantasy image titled "${i.key}" that was created to represent the personality trait "${vars.personality_trait}". The image shows: ${prompt}. Write a concise 2-3 sentence description explaining what is depicted in the image and how it symbolically represents the ${vars.personality_trait} personality trait. Be specific and insightful.`;
+                  const descPrompt = `You are analyzing a fantasy image titled "${i.key}" that was created to represent ${primaryTrait}. The image shows: ${prompt}. Write a concise 2-3 sentence description explaining what is depicted in the image and how it symbolically represents the ${primaryTrait} personality trait. Be specific and insightful.`;
                   
                   const descRes = await fetch(`${API_BASE}/api/analyze-personality`, {
                     method: 'POST', 
@@ -339,18 +366,193 @@ function createProgress() {
 }
 
 function stripBold(text: string) {
-  return text.replace(/\*\*/g, '');
+  // Keep markdown formatting for better readability
+  return text;
 }
 
-function renderReport(text: string) {
+function renderReport(text: string, locked = true) {
   const container = document.getElementById('reportText') as HTMLDivElement;
   container.innerHTML = '';
-  const parts = text.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
-  for (const p of parts) {
-    const el = document.createElement('p');
-    el.textContent = p;
-    container.appendChild(el);
+  
+  // Split by section headers (looking for **Header**: or **Header** patterns at start of line)
+  const lines = text.split('\n');
+  let currentSection = '';
+  let currentContent: string[] = [];
+  
+  lines.forEach((line) => {
+    const headerMatch = line.match(/^\*\*([^*]+)\*\*:?\s*$/);
+    if (headerMatch) {
+      // This is a header
+      if (currentContent.length > 0) {
+        appendSection(container, currentSection, currentContent.join('\n').trim(), locked);
+        currentContent = [];
+      }
+      currentSection = headerMatch[1].trim();
+    } else {
+      currentContent.push(line);
+    }
+  });
+  
+  // Append last section
+  if (currentContent.length > 0) {
+    appendSection(container, currentSection, currentContent.join('\n').trim(), locked);
   }
+}
+
+function appendSection(container: HTMLElement, header: string, content: string, locked: boolean) {
+  const isLockedSection = locked && (header.includes('Strengths') || header.includes('Blind Spots'));
+  
+  console.log('[appendSection]', { header, isLockedSection, locked });
+  
+  const sectionDiv = document.createElement('div');
+  if (isLockedSection) {
+    sectionDiv.className = 'locked-section';
+  }
+  
+  // Add header
+  const headerEl = document.createElement('h3');
+  headerEl.innerHTML = `<strong>${header}</strong>`;
+  sectionDiv.appendChild(headerEl);
+  
+  // Process content
+  const contentDiv = document.createElement('div');
+  if (isLockedSection) {
+    contentDiv.className = 'blur-overlay';
+  }
+  
+  let html = content
+    // Convert **bold** to <strong>
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert bullet points to HTML lists
+    .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')
+    // Wrap consecutive list items in <ul>
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+    // Convert line breaks to paragraphs
+    .split(/\n\s*\n/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p>${p}</p>`)
+    .join('');
+  
+  contentDiv.innerHTML = html;
+  sectionDiv.appendChild(contentDiv);
+  
+  // Add unlock prompt for locked sections
+  if (isLockedSection) {
+    const prompt = document.createElement('div');
+    prompt.className = 'unlock-prompt';
+    prompt.textContent = 'Generate your Fantasy Set to unlock';
+    sectionDiv.appendChild(prompt);
+  }
+  
+  container.appendChild(sectionDiv);
+}
+
+function renderTraitsChart(scores: ReturnType<typeof computeScores>) {
+  const canvas = document.getElementById('traitsChart') as HTMLCanvasElement;
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const traits = [
+    { name: 'Extraversion', value: scores.Extraversion, color: '#ff6b6b' },
+    { name: 'Conscientiousness', value: scores.Conscientiousness, color: '#4ecdc4' },
+    { name: 'Emotional Stability', value: scores.EmotionalStability, color: '#45b7d1' },
+    { name: 'Openness', value: scores.Openness, color: '#a78bfa' },
+    { name: 'Agreeableness', value: scores.Agreeableness, color: '#f9a826' },
+    { name: 'Decisiveness', value: scores.Decisiveness, color: '#fd79a8' },
+    { name: 'Risk Orientation', value: scores.RiskOrientation, color: '#fdcb6e' },
+    { name: 'Self Insight', value: scores.SelfInsight, color: '#6c5ce7' }
+  ];
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const barHeight = 30;
+  const gap = 8;
+  const leftMargin = 150;
+  const maxValue = 7;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.font = '14px system-ui, -apple-system, sans-serif';
+
+  traits.forEach((trait, i) => {
+    const y = i * (barHeight + gap) + 10;
+    const barWidth = ((width - leftMargin - 40) * trait.value) / maxValue;
+
+    // Draw label
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'right';
+    ctx.fillText(trait.name, leftMargin - 10, y + barHeight / 2 + 5);
+
+    // Draw bar background
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(leftMargin, y, width - leftMargin - 40, barHeight);
+
+    // Draw bar
+    ctx.fillStyle = trait.color;
+    ctx.fillRect(leftMargin, y, barWidth, barHeight);
+
+    // Draw value
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'left';
+    ctx.fillText(trait.value.toFixed(1), leftMargin + barWidth + 8, y + barHeight / 2 + 5);
+  });
+}
+
+function renderFacetsChart(scores: ReturnType<typeof computeScores>) {
+  const canvas = document.getElementById('facetsChart') as HTMLCanvasElement;
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const facets = Object.entries(scores.facets).map(([name, value]) => ({ name, value }));
+  
+  const colors: Record<string, string> = {
+    'Extraversion': '#ff6b6b',
+    'Conscientiousness': '#4ecdc4',
+    'Emotional Stability': '#45b7d1',
+    'Openness': '#a78bfa',
+    'Agreeableness': '#f9a826'
+  };
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const barHeight = 28;
+  const gap = 6;
+  const leftMargin = 240;
+  const maxValue = 7;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.font = '13px system-ui, -apple-system, sans-serif';
+
+  facets.forEach((facet, i) => {
+    const y = i * (barHeight + gap) + 10;
+    const barWidth = ((width - leftMargin - 40) * facet.value) / maxValue;
+    
+    // Get color based on parent trait
+    const parentTrait = facet.name.split(':')[0];
+    const color = colors[parentTrait] || '#6c5ce7';
+
+    // Draw label
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'right';
+    ctx.fillText(facet.name, leftMargin - 10, y + barHeight / 2 + 4);
+
+    // Draw bar background
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(leftMargin, y, width - leftMargin - 40, barHeight);
+
+    // Draw bar
+    ctx.fillStyle = color;
+    ctx.fillRect(leftMargin, y, barWidth, barHeight);
+
+    // Draw value
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'left';
+    ctx.fillText(facet.value.toFixed(1), leftMargin + barWidth + 8, y + barHeight / 2 + 4);
+  });
 }
 
 
